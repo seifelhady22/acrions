@@ -1,64 +1,80 @@
-name: CI/CD Pipeline
+name: Exam CI/CD Pipeline
 
 on:
   push:
-    branches: [ main ]
-  workflow_dispatch: # يسمح لك بتشغيل الورك فلو يدوياً
+    branches: [ "main" ]
+  workflow_dispatch:
 
-# صلاحيات ضرورية عشان خطوة الديبلوي تنجح
 permissions:
   contents: write
 
 jobs:
-  # --- 1. Test Job ---
-  test:
+  # --- Job 1: Testing ---
+  test-job:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-      
-      # التغيير الأول: استخدمنا install بدلاً من ci لتجنب مشاكل الـ Lock file
-      - run: npm install
-      
-      # مهم: إضافة watchAll=false عشان التست ما يعلقش مستني منك تضغط زرار
-      - run: npm test -- --watchAll=false
+      - name: Checkout Code
+        uses: actions/checkout@v4
 
-  # --- 2. Build Job ---
-  build:
-    needs: test
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      # الإصلاح 1: استخدام install بدلاً من ci لتجنب خطأ الـ Lock file
+      - name: Install Dependencies
+        run: npm install
+
+      # الإصلاح 2: إضافة --watchAll=false عشان الاختبار يخلص وميعلقش
+      - name: Run Tests
+        run: npm test -- --watchAll=false
+
+  # --- Job 2: Building ---
+  build-job:
+    needs: test-job
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-      - run: npm install
-      - run: npm run build
+      - name: Checkout Code
+        uses: actions/checkout@v4
 
-      # التغيير الثاني: حفظ ملفات البيلد عشان نبعتها للخطوة اللي بعدها
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Build Project
+        run: npm run build
+
+      # مطلوب في الامتحان: طباعة الـ Context
+      - name: Print GitHub Context
+        run: echo "Build triggered by ${{ github.actor }} on commit ${{ github.sha }}"
+
+      # خطوة مهمة لنقل الملفات للخطوة التالية
       - name: Upload Build Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: build-folder
+          name: build-files
           path: build/
 
-  # --- 3. Deploy Job ---
-  deploy:
-    needs: build
+  # --- Job 3: Deploying ---
+  deploy-job:
+    needs: build-job
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      
-      # التغيير الثالث: تحميل ملفات البيلد اللي عملناها في الخطوة السابقة
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # استلام الملفات من خطوة الـ Build
       - name: Download Build Artifact
         uses: actions/download-artifact@v4
         with:
-          name: build-folder
+          name: build-files
           path: build/
 
-      # كود الديبلوي الحقيقي (بدل مجرد طباعة رسالة)
+      # الرفع على GitHub Pages
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
