@@ -15,7 +15,7 @@ function App() {
           target="_blank"
           rel="noopener noreferrer"
         >
-          Learn React
+          Seif Elhady - CI/CD Final Test Passed! 🚀
         </a>
       </header>
     </div>
