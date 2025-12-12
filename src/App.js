@@ -15,7 +15,7 @@ function App() {
           target="_blank"
           rel="noopener noreferrer"
         >
-          Seif Elhady - CI/CD Final Test Passed! 🚀
+          Seif Elhady 🚀
         </a>
       </header>
     </div>
