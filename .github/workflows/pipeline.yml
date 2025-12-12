@@ -5,6 +5,7 @@ on:
     branches: [ "main" ]
   workflow_dispatch:
 
+# هذه الصلاحية ضرورية جداً عشان يقدر يرفع الموقع
 permissions:
   contents: write
 
@@ -21,11 +22,11 @@ jobs:
         with:
           node-version: 18
 
-      # الإصلاح 1: استخدام install بدلاً من ci لتجنب خطأ الـ Lock file
+      # التعديل 1: استخدام install بدلاً من ci لتجنب الايرور اللي ظهر لك
       - name: Install Dependencies
         run: npm install
 
-      # الإصلاح 2: إضافة --watchAll=false عشان الاختبار يخلص وميعلقش
+      # التعديل 2: إضافة منع المراقبة عشان التست يخلص وميعلقش
       - name: Run Tests
         run: npm test -- --watchAll=false
 
@@ -48,11 +49,11 @@ jobs:
       - name: Build Project
         run: npm run build
 
-      # مطلوب في الامتحان: طباعة الـ Context
+      # مطلوب في الامتحان
       - name: Print GitHub Context
-        run: echo "Build triggered by ${{ github.actor }} on commit ${{ github.sha }}"
+        run: echo "Build triggered by ${{ github.actor }} "
 
-      # خطوة مهمة لنقل الملفات للخطوة التالية
+      # التعديل 3: حفظ ملفات البيلد عشان ننقلها للخطوة الجاية
       - name: Upload Build Artifact
         uses: actions/upload-artifact@v4
         with:
@@ -67,14 +68,14 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      # استلام الملفات من خطوة الـ Build
+      # التعديل 4: استلام ملفات البيلد
       - name: Download Build Artifact
         uses: actions/download-artifact@v4
         with:
           name: build-files
           path: build/
 
-      # الرفع على GitHub Pages
+      # الرفع النهائي
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
