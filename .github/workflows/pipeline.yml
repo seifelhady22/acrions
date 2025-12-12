@@ -3,38 +3,64 @@ name: CI/CD Pipeline
 on:
   push:
     branches: [ main ]
-  pull_request:
-    branches: [ main ]
+  workflow_dispatch: # يسمح لك بتشغيل الورك فلو يدوياً
+
+# صلاحيات ضرورية عشان خطوة الديبلوي تنجح
+permissions:
+  contents: write
 
 jobs:
+  # --- 1. Test Job ---
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: '18'
-      - run: npm ci
-      - run: npm test
+      
+      # التغيير الأول: استخدمنا install بدلاً من ci لتجنب مشاكل الـ Lock file
+      - run: npm install
+      
+      # مهم: إضافة watchAll=false عشان التست ما يعلقش مستني منك تضغط زرار
+      - run: npm test -- --watchAll=false
 
+  # --- 2. Build Job ---
   build:
     needs: test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: '18'
-      - run: npm ci
+      - run: npm install
       - run: npm run build
 
+      # التغيير الثاني: حفظ ملفات البيلد عشان نبعتها للخطوة اللي بعدها
+      - name: Upload Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-folder
+          path: build/
+
+  # --- 3. Deploy Job ---
   deploy:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - uses: actions/checkout@v4
+      
+      # التغيير الثالث: تحميل ملفات البيلد اللي عملناها في الخطوة السابقة
+      - name: Download Build Artifact
+        uses: actions/download-artifact@v4
         with:
-          node-version: '18'
-      - run: npm ci
-      - run: echo "Deployment successful!"
+          name: build-folder
+          path: build/
+
+      # كود الديبلوي الحقيقي (بدل مجرد طباعة رسالة)
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./build
