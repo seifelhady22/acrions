@@ -15,7 +15,7 @@ function App() {
           target="_blank"
           rel="noopener noreferrer"
         >
-          Seif Elhady 🚀
+          to go react page click here 
         </a>
       </header>
     </div>
