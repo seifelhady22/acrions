@@ -15,7 +15,7 @@ function App() {
           target="_blank"
           rel="noopener noreferrer"
         >
-          to go react page click here 
+          to go React page click here 
         </a>
       </header>
     </div>

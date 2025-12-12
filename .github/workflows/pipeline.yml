@@ -5,12 +5,12 @@ on:
     branches: [ "main" ]
   workflow_dispatch:
 
-# هذه الصلاحية ضرورية جداً عشان يقدر يرفع الموقع
+
 permissions:
   contents: write
 
 jobs:
-  # --- Job 1: Testing ---
+  
   test-job:
     runs-on: ubuntu-latest
     steps:
@@ -22,15 +22,16 @@ jobs:
         with:
           node-version: 18
 
-      # التعديل 1: استخدام install بدلاً من ci لتجنب الايرور اللي ظهر لك
+      
       - name: Install Dependencies
         run: npm install
 
-      # التعديل 2: إضافة منع المراقبة عشان التست يخلص وميعلقش
+      
+      
       - name: Run Tests
         run: npm test -- --watchAll=false
 
-  # --- Job 2: Building ---
+  
   build-job:
     needs: test-job
     runs-on: ubuntu-latest
@@ -49,18 +50,18 @@ jobs:
       - name: Build Project
         run: npm run build
 
-      # مطلوب في الامتحان
+      
       - name: Print GitHub Context
         run: echo "Build triggered by ${{ github.actor }} "
 
-      # التعديل 3: حفظ ملفات البيلد عشان ننقلها للخطوة الجاية
+      
       - name: Upload Build Artifact
         uses: actions/upload-artifact@v4
         with:
           name: build-files
           path: build/
 
-  # --- Job 3: Deploying ---
+  
   deploy-job:
     needs: build-job
     runs-on: ubuntu-latest
@@ -68,14 +69,14 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      # التعديل 4: استلام ملفات البيلد
+      
       - name: Download Build Artifact
         uses: actions/download-artifact@v4
         with:
           name: build-files
           path: build/
 
-      # الرفع النهائي
+      
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
